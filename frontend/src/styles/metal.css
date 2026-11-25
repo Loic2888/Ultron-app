@@ -1,0 +1,304 @@
+/*
+ * Metal / futuristic surface kit for the workbench.
+ *
+ * Colors stay the same as the rest of the app (near-black neutrals + red
+ * accent). Only the *surfaces* change: brushed steel gradients, bevelled
+ * edges, inset wells and soft glow, to give a 3D, metallic look.
+ *
+ * Everything is scoped under `.wb-root`, which also forces the dark tokens,
+ * so the workbench looks the same whatever theme the rest of the app uses.
+ */
+
+@layer components {
+  .wb-root {
+    --metal-hi: #4a4f58;
+    --metal-mid: #23262c;
+    --metal-lo: #0e0f12;
+    --metal-edge-hi: rgba(255, 255, 255, 0.16);
+    --metal-edge-lo: rgba(0, 0, 0, 0.7);
+    --metal-brush: repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 0 1px,
+      rgba(0, 0, 0, 0.03) 1px 3px
+    );
+    position: relative;
+    color: var(--color-text);
+    font-family: var(--font-display);
+  }
+
+  /* Raised brushed-steel plate. */
+  .metal-panel {
+    background:
+      var(--metal-brush),
+      linear-gradient(160deg, var(--metal-hi) -40%, var(--metal-mid) 35%, var(--metal-lo) 120%);
+    border: 1px solid #000;
+    box-shadow:
+      inset 0 1px 0 var(--metal-edge-hi),
+      inset 0 -1px 0 var(--metal-edge-lo),
+      0 8px 24px -10px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Darker, flatter plate for large work areas. Its soft glow stays cyan on
+     purpose (the red accent applies to everything except this background). */
+  .metal-well {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(34, 211, 238, 0.07), transparent 62%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, transparent 35%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2)),
+      var(--color-bg);
+    border: 1px solid #000;
+    box-shadow:
+      inset 0 2px 10px rgba(0, 0, 0, 0.85),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+
+  /* Raised button: pressed look on :active, red rim on hover/focus. */
+  .metal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.375rem;
+    border: 1px solid #000;
+    color: var(--color-text-secondary);
+    background: linear-gradient(180deg, #3a3e46 0%, #22252b 55%, #15171b 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -2px 3px rgba(0, 0, 0, 0.55),
+      0 2px 4px rgba(0, 0, 0, 0.6);
+    transition: color 120ms, box-shadow 120ms, transform 60ms;
+    cursor: pointer;
+  }
+  .metal-btn:hover:not(:disabled),
+  .metal-btn:focus-visible {
+    color: var(--color-accent);
+    outline: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -2px 3px rgba(0, 0, 0, 0.55),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 55%, transparent),
+      0 0 14px -2px var(--color-accent-glow);
+  }
+  .metal-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    background: linear-gradient(180deg, #15171b 0%, #22252b 100%);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.85);
+  }
+  .metal-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .metal-btn[aria-current='page'],
+  .metal-btn[data-active='true'] {
+    color: var(--color-accent);
+    background: linear-gradient(180deg, #101215 0%, #1b1e23 100%);
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.85),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+      0 0 16px -3px var(--color-accent-glow);
+  }
+
+  /* Square icon button of the vertical activity bar. */
+  .activity-btn {
+    position: relative;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  .activity-btn[aria-current='page']::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 7px;
+    bottom: 7px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--color-accent);
+    box-shadow: 0 0 10px var(--color-accent-glow);
+  }
+
+  /* Round Jarvis button: rim lights up on hover, presses in on click. */
+  .jarvis-orb {
+    position: absolute;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    padding: 0;
+    transition: transform 80ms, filter 160ms;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+  }
+  .jarvis-orb:hover,
+  .jarvis-orb:focus-visible {
+    outline: none;
+    filter: drop-shadow(0 0 10px var(--color-accent-glow)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+  }
+  .jarvis-orb:active {
+    transform: scale(0.96);
+  }
+
+  /* Draggable divider: black brushed-metal bar, bevelled rails, tribal blades. */
+  .metal-splitter {
+    position: relative;
+    flex: none;
+    height: 9px;
+    z-index: 5; /* the relief ornament rises above the neighbouring panels */
+    cursor: row-resize;
+    touch-action: none;
+    color: #4b525c; /* gem colour at rest */
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, #3a3e46 0%, #15171b 22%, #08090b 50%, #15171b 78%, #2c3037 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-bottom: 1px solid #000;
+    box-shadow:
+      0 -2px 6px rgba(0, 0, 0, 0.6),
+      0 2px 6px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Grooved rails running out from the ornament to both edges. */
+  .metal-splitter::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 50%;
+    height: 3px;
+    transform: translateY(-50%);
+    border-radius: 2px;
+    background: repeating-linear-gradient(90deg, #000 0 2px, #1d2025 2px 6px);
+    box-shadow: inset 0 1px 2px #000, 0 1px 0 rgba(255, 255, 255, 0.07);
+    opacity: 0.9;
+  }
+  .metal-splitter-art {
+    width: 296px;
+    height: 17px;
+    flex: none;
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.22)) drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.95));
+  }
+  .metal-splitter-gem {
+    transition: filter 140ms;
+  }
+  .metal-splitter:hover,
+  .metal-splitter[data-dragging='true'],
+  .metal-splitter:focus-visible {
+    color: var(--color-accent);
+  }
+  .metal-splitter:hover .metal-splitter-gem,
+  .metal-splitter[data-dragging='true'] .metal-splitter-gem,
+  .metal-splitter:focus-visible .metal-splitter-gem {
+    filter: drop-shadow(0 0 4px var(--color-accent-glow)) drop-shadow(0 0 8px var(--color-accent-glow));
+  }
+  .metal-splitter:focus-visible {
+    outline: none;
+  }
+
+  /* Tab on the central strip. */
+  .metal-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    border: 1px solid #000;
+    border-bottom: none;
+    border-radius: 0.4rem 0.4rem 0 0;
+    background: linear-gradient(180deg, #2b2f36, #17191d);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+  }
+  .metal-tab[aria-selected='true'] {
+    color: var(--color-text);
+    background: linear-gradient(180deg, #0c0d0f, #14161a);
+    box-shadow:
+      inset 0 2px 0 var(--color-accent),
+      0 0 14px -4px var(--color-accent-glow);
+  }
+
+  .metal-title {
+    font-family: var(--font-display);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    background: linear-gradient(180deg, #ffffff 0%, #9aa2ad 55%, #5c626b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1px 0 #000);
+  }
+
+  /* Markdown inside a Claude Code answer. */
+  .chat-md > :first-child { margin-top: 0; }
+  .chat-md > :last-child { margin-bottom: 0; }
+  .chat-md p, .chat-md ul, .chat-md ol, .chat-md pre, .chat-md table, .chat-md blockquote { margin: 0.5rem 0; }
+  .chat-md ul { list-style: disc; padding-left: 1.3rem; }
+  .chat-md ol { list-style: decimal; padding-left: 1.3rem; }
+  .chat-md h1, .chat-md h2, .chat-md h3 { font-weight: 700; margin: 0.8rem 0 0.3rem; }
+  .chat-md h1 { font-size: 1.15em; }
+  .chat-md h2 { font-size: 1.08em; }
+  .chat-md a { color: var(--color-accent); text-decoration: underline; }
+  .chat-md code {
+    font-family: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.85em;
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.25rem;
+    background: #050607;
+  }
+  .chat-md pre {
+    overflow-x: auto;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.4rem;
+    background: #050607;
+    border: 1px solid #000;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+  }
+  .chat-md pre code { padding: 0; background: none; font-size: 0.8rem; }
+  .chat-md blockquote { padding-left: 0.75rem; border-left: 2px solid var(--color-accent); color: var(--color-text-secondary); }
+  .chat-md table { border-collapse: collapse; font-size: 0.85em; }
+  .chat-md th, .chat-md td { border: 1px solid #000; padding: 0.25rem 0.5rem; }
+}
+
+/*
+ * Installed app with the title bar merged into the page (Window Controls
+ * Overlay): the system keeps only its minimize / maximize / close buttons, drawn
+ * over the top-right corner. `--wb-top` is the height of that strip.
+ */
+:root {
+  --wb-top: 0px;
+}
+.wb-titlebar {
+  display: none;
+}
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --wb-top: env(titlebar-area-height, 32px);
+  }
+  .wb-root {
+    padding-top: var(--wb-top);
+  }
+  .wb-titlebar {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: env(titlebar-area-x, 0px);
+    width: env(titlebar-area-width, 100%);
+    height: var(--wb-top);
+    padding-left: 12px;
+    z-index: 60;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    -webkit-app-region: drag;
+    app-region: drag;
+    user-select: none;
+  }
+}
