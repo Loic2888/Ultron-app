@@ -281,7 +281,7 @@ class TestOwnerTasks:
             bridge, fake = make()
             await bridge.handle_update(msg("/start"))
             await bridge.handle_update(msg("/bogus"))
-            assert "Jarvis on your phone" in fake.sent()[0]
+            assert "Ultron on your phone" in fake.sent()[0]
             assert fake.sent()[1].startswith("Unknown command")
             assert bridge.session is None  # commands do not start a session
             await finish(bridge)
@@ -542,7 +542,7 @@ class TestRunLoop:
             await settle(bridge, fake, lambda: "echo: hello now" in fake.sent())
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
-            assert "Jarvis is online" in fake.sent()[0]
+            assert "Ultron is online" in fake.sent()[0]
             assert not any("yesterday" in t for t in fake.sent())
             polls = [p for m, p in fake.calls if m == "getUpdates"]
             assert polls[0]["offset"] == -1 and polls[0]["timeout"] == 0

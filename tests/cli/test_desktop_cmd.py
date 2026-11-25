@@ -95,7 +95,7 @@ def test_shortcut_script_runs_jarvis_desktop_in_the_right_distro():
     assert "wsl.exe" in script
     assert "-d Ubuntu --cd ~ --" in script
     assert "/home/u/.local/bin/jarvis desktop" in script
-    assert "Jarvis.lnk" in script and "WindowStyle = 7" in script
+    assert "Ultron.lnk" in script and "WindowStyle = 7" in script
     assert "IconLocation" in script
 
 
