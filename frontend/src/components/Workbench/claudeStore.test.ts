@@ -70,7 +70,7 @@ describe('opening a chat', () => {
     await useClaude.getState().open('k1', '/home/u/a');
     await flush();
     const chat = useClaude.getState().chats.k1;
-    expect(m.createSession).toHaveBeenCalledWith('/home/u/a', 'default', null, 'code', {
+    expect(m.createSession).toHaveBeenCalledWith('/home/u/a', 'auto', null, 'code', {
       model: null,
       effort: null,
       rules: undefined,
@@ -134,7 +134,7 @@ describe('opening a chat', () => {
 describe('a Jarvis chat', () => {
   it('is created with the jarvis kind and keeps it', async () => {
     await useClaude.getState().open('jarvis', '/home/u', 'jarvis');
-    expect(m.createSession).toHaveBeenCalledWith('/home/u', 'default', null, 'jarvis', expect.any(Object));
+    expect(m.createSession).toHaveBeenCalledWith('/home/u', 'auto', null, 'jarvis', expect.any(Object));
     expect(useClaude.getState().chats.jarvis.kind).toBe('jarvis');
   });
 });

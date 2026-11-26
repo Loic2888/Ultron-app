@@ -436,7 +436,7 @@ class TestSessions:
         assert start["has_anthropic"] is False
         assert start["cwd"] == str(home / "repo")
         assert "--permission-prompt-tool" in start["argv"]
-        assert start["argv"][start["argv"].index("--permission-mode") + 1] == "default"
+        assert start["argv"][start["argv"].index("--permission-mode") + 1] == "auto"
 
     def test_empty_and_huge_messages_refused(self, home, fake_claude, api):
         a = api()
@@ -799,6 +799,15 @@ class TestCustomModeAndSettings:
             json={"permission_mode": "default"},
         )
         assert res.json()["alive"] is True  # custom -> default: same program mode
+
+    def test_auto_is_default_and_passed_to_claude(self, home, fake_claude, api):
+        a = api()
+        info = _new(a, home)
+        assert info["permission_mode"] == "auto"
+        a.call("POST", f"/v1/claude/sessions/{info['id']}/message", json={"text": "x"})
+        a.wait(info["id"], _is_result)
+        argv = self._argv(fake_claude)[0]
+        assert argv[argv.index("--permission-mode") + 1] == "auto"
 
     def test_model_and_effort_are_passed_and_changeable(self, home, fake_claude, api):
         a = api()

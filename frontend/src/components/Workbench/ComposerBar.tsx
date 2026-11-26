@@ -8,6 +8,7 @@ import RulesDialog from './RulesDialog';
 import { useClaude } from './claudeStore';
 
 export const MODES: { value: PermissionMode; label: string; hint: string }[] = [
+  { value: 'auto', label: 'Auto', hint: "Claude's own safety check approves routine actions; anything it is unsure about still asks you." },
   { value: 'default', label: 'Ask first', hint: 'Claude asks before it edits a file or runs a command.' },
   { value: 'acceptEdits', label: 'Accept edits', hint: 'File edits go through; commands still ask.' },
   { value: 'custom', label: 'Custom', hint: 'Like Accept edits, plus the rules you choose (commands, deletions, pull requests…).' },

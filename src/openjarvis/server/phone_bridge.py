@@ -354,7 +354,7 @@ class PhoneBridge:
             self.session = await make_session(
                 manager_of(self.app),
                 cwd=self.home,
-                mode="default",
+                mode="auto",
                 model=None,
                 resume=None,
                 kind="jarvis",

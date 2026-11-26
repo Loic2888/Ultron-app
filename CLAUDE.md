@@ -226,7 +226,7 @@ Donner un shell à un navigateur est dangereux. Obligatoire :
    d'écriture) ; elle n'agit que par ses outils MCP (`server/jarvis_mcp.py`,
    table dans `server/jarvis_policy.py`) : `list_workspace`, `find_repos`,
    `open_repo`, `new_claude_tab`, `new_terminal`, `send_prompt`, `read_chat`
-   (sûrs) et `create_repo`, `delete_path` (**sensibles**). Règle imposée **en
+   (sûrs) et `create_repo`, `delete_path` (**sensibles**). Tourne toujours en mode `auto` (forcé côté serveur, comme pour le robot téléphone) : sans outil intégré, le vrai contrôle est celui ci-dessous. Règle imposée **en
    code, à deux endroits** : (1) quand `claude` demande un outil, `decide()`
    autorise les outils sûrs, demande à Loïc pour les sensibles (carte
    Accepter/Refuser) et refuse tout le reste ; (2) à l'exécution,
@@ -291,7 +291,7 @@ Code : `+` (actions rapides : /compact, /context, /usage, /init), `/` (commandes
 annoncées par l'évènement `init` de `claude`), durée de la fenêtre, agents
 (sous-agents en cours, types disponibles), modèle + effort (`--model`, `--effort`,
 changés par `POST .../settings`, reprise `--resume`), mode de permission. Modes :
-`default` (Ask first), `acceptEdits` (Accept edits), **`custom`** (remplace « Plan
+**`auto` (par défaut pour les nouvelles fenêtres : `--permission-mode auto`, le contrôle de sécurité de `claude` décide ; ce qu'il escalade passe par Accepter/Refuser ; ce qu'il accepte seul n'est pas interceptable côté serveur)**, `default` (Ask first), `acceptEdits` (Accept edits), **`custom`** (remplace « Plan
 only » ; `plan` n'est plus proposé mais reste accepté par le serveur). **Custom
 fait tourner `claude` en `default`** (son `acceptEdits` laisse passer `rm`/`mv`/`cp`
 sans rien demander) et le serveur décide chaque question : modifications de

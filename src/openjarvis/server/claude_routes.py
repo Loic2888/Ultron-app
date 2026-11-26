@@ -57,7 +57,7 @@ MAX_PROMPT_CHARS = 100_000
 MAX_EVENTS = 20_000
 IDLE_STOP_SECONDS = 600.0
 KEEPALIVE_SECONDS = 15.0
-PERMISSION_MODES = ("default", "acceptEdits", "plan", "custom")
+PERMISSION_MODES = ("default", "acceptEdits", "plan", "custom", "auto")
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 _MODEL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:\-\[\]]{0,79}$")
 KINDS = ("code", "jarvis")
@@ -800,7 +800,9 @@ async def make_session(
     session = Session(
         uuid.uuid4().hex,
         str(cwd),
-        "default" if kind == "jarvis" else mode,
+        # Ultron's own chat always runs in auto, whatever is asked: it has no
+        # built-in tools, and its sensitive tools are gated again at execution.
+        "auto" if kind == "jarvis" else mode,
         model,
         resume,
         kind=kind,
@@ -847,7 +849,7 @@ def _get(request: Request, sid: str) -> Session:
 
 class CreateBody(BaseModel):
     cwd: str
-    permission_mode: str = "default"
+    permission_mode: str = "auto"
     model: Optional[str] = None
     resume: Optional[str] = None
     kind: str = "code"

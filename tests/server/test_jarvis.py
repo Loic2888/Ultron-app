@@ -642,7 +642,7 @@ class TestJarvisSession:
         assert cfg["env"]["JARVIS_SECRET"] == a.secret(sid)
         assert cfg["env"]["JARVIS_API"].startswith("http://127.0.0.1:")
         assert "Jarvis" in argv[argv.index("--append-system-prompt") + 1]
-        assert argv[argv.index("--permission-mode") + 1] == "default"
+        assert argv[argv.index("--permission-mode") + 1] == "auto"
         assert "--resume" not in argv
 
     def test_the_private_config_is_removed_when_the_chat_closes(
@@ -670,7 +670,7 @@ class TestJarvisSession:
             "/v1/claude/sessions",
             json={"cwd": str(home / "w"), "kind": "jarvis", "permission_mode": "plan"},
         )
-        assert res.json()["permission_mode"] == "default"
+        assert res.json()["permission_mode"] == "auto"
 
     def test_unknown_kind_refused(self, home, fake_jarvis, japi):
         a = japi()

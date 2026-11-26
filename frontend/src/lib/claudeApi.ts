@@ -6,7 +6,7 @@
 import { follow } from './hub';
 import { WorkspaceError, authedFetch, describeStatus } from './workspaceApi';
 
-export type PermissionMode = 'default' | 'acceptEdits' | 'custom' | 'plan';
+export type PermissionMode = 'auto' | 'default' | 'acceptEdits' | 'custom' | 'plan';
 export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 
 /** Rules of the "Custom" mode (see server/custom_rules.py). Everything is off by default. */

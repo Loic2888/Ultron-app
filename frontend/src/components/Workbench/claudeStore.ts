@@ -194,7 +194,7 @@ export const useClaude = create<Store>((set, get) => {
       opening.add(key);
       try {
         const saved = readSaved()[key];
-        const mode = existing?.mode ?? saved?.mode ?? 'default';
+        const mode = existing?.mode ?? saved?.mode ?? 'auto';
         const model = existing?.model ?? emptyChat();
         set((s) => ({
           chats: {
