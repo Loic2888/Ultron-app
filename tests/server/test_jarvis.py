@@ -641,7 +641,7 @@ class TestJarvisSession:
         assert cfg["args"] == ["-m", "openjarvis.server.jarvis_mcp"]
         assert cfg["env"]["JARVIS_SECRET"] == a.secret(sid)
         assert cfg["env"]["JARVIS_API"].startswith("http://127.0.0.1:")
-        assert "Jarvis" in argv[argv.index("--append-system-prompt") + 1]
+        assert "Ultron" in argv[argv.index("--append-system-prompt") + 1]
         assert argv[argv.index("--permission-mode") + 1] == "auto"
         assert "--resume" not in argv
 
@@ -763,3 +763,10 @@ class TestShutdown:
         assert not os.path.exists(cfg_path)
         with pytest.raises(ProcessLookupError):
             os.kill(pid, 0)
+
+
+def test_the_prompt_asks_for_short_plain_answers():
+    from openjarvis.server.jarvis_policy import PROMPT
+
+    for word in ("phone", "plain", "tables", "file paths", "language the owner writes"):
+        assert word in PROMPT
