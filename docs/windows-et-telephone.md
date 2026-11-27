@@ -72,8 +72,8 @@ port n'est ouvert sur ton réseau), et seul **ton** compte est écouté.
    `jarvis`), puis relance le serveur :
 
    ```
-   OPENJARVIS_PHONE_BOT_TOKEN=<le jeton>
-   OPENJARVIS_PHONE_OWNER_ID=<ton identifiant numérique>
+   OPENULTRON_PHONE_BOT_TOKEN=<le jeton>
+   OPENULTRON_PHONE_OWNER_ID=<ton identifiant numérique>
    ```
 4. Ouvre ton robot dans Telegram, envoie `/start`. Jarvis répond « online ».
 
@@ -105,8 +105,8 @@ soit ouverte sur le PC ; sinon Jarvis répond qu'aucun écran n'est ouvert.
 | Fuite du jeton | Retiré de l'environnement des terminaux et de `claude` ; jamais écrit dans les journaux ; en cas de doute, `/revoke` auprès de @BotFather. |
 | Vol du téléphone | La suppression ne fait que déplacer à la corbeille (récupérable) ; `/revoke` coupe l'accès. |
 
-Réglages facultatifs (même fichier) : `OPENJARVIS_PHONE_MAX_PER_HOUR`,
-`OPENJARVIS_PHONE_MAX_TEXT`, `OPENJARVIS_PHONE_TURN_SECONDS`.
+Réglages facultatifs (même fichier) : `OPENULTRON_PHONE_MAX_PER_HOUR`,
+`OPENULTRON_PHONE_MAX_TEXT`, `OPENULTRON_PHONE_TURN_SECONDS`.
 
 ### Ce que Telegram voit
 

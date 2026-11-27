@@ -67,7 +67,7 @@ _SECRET_ENV_EXACT = {
     "TAVILY_API_KEY",
     "TELEGRAM_BOT_TOKEN",
 }
-_SECRET_ENV_PREFIXES = ("ANTHROPIC_", "OPENJARVIS_")
+_SECRET_ENV_PREFIXES = ("ANTHROPIC_", "OPENJARVIS_", "OPENULTRON_")
 
 
 # --------------------------------------------------------------------------
