@@ -147,6 +147,18 @@ export function addClaudeTab(
   return { ...next, nextId: s.nextId + 1 };
 }
 
+/**
+ * Label shown on a tab. A Claude Code window that is alone in its strip is shown
+ * without its number ("Claude Code", not "Claude Code 2"): the number is only
+ * there to tell several windows apart. The stored title and the counter are
+ * untouched.
+ */
+export function tabLabel(tab: Tab, tabs: Tab[]): string {
+  if (tab.kind !== 'claude') return tab.title;
+  if (tabs.filter((t) => t.kind === 'claude').length > 1) return tab.title;
+  return tab.title.replace(/ \d+$/, '');
+}
+
 export function selectTab(s: WorkspaceState, repo: string, id: number): WorkspaceState {
   return withSession(s, repo, (x) => (x.tabs.some((t) => t.id === id) ? { ...x, activeTab: id } : x));
 }
