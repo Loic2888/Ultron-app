@@ -4,7 +4,7 @@ import { useClaude } from './claudeStore';
 import { SplitterOrnament } from '../futuristic/SplitterOrnament';
 import { TerminalView } from './TerminalView';
 import { useSplit } from './useSplit';
-import { type Tab, openEditorPaths } from './workspaceModel';
+import { type Tab, openEditorPaths, tabLabel } from './workspaceModel';
 import { dirtyKeyOf, useWorkspace } from './workspaceStore';
 
 // Monaco is heavy: it is only downloaded when a file is first opened.
@@ -48,7 +48,7 @@ function TabStrip({
             {t.kind === 'editor' && <FileCode2 size={12} />}
             {t.kind === 'claude' && <Cpu size={12} />}
             {t.kind === 'terminal' && <SquareTerminal size={12} />}
-            {t.title}
+            {tabLabel(t, tabs)}
             {dirty?.(t) && (
               <span aria-label="Unsaved changes" style={{ color: 'var(--color-warning, #f59e0b)' }}>
                 ●
@@ -56,7 +56,7 @@ function TabStrip({
             )}
             <button
               type="button"
-              aria-label={`Close ${t.title}`}
+              aria-label={`Close ${tabLabel(t, tabs)}`}
               className="opacity-60 hover:opacity-100 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();

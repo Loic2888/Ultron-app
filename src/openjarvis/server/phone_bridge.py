@@ -8,8 +8,9 @@ Safety design (the phone is the riskiest door into the app):
   the chat type all match the owner's numeric Telegram id and the chat is a
   private one. Everyone else is ignored without any answer (the bot does not
   even confirm that it exists).
-* **Off unless configured.** It needs ``OPENJARVIS_PHONE_BOT_TOKEN`` and
-  ``OPENJARVIS_PHONE_OWNER_ID``. These ``OPENJARVIS_*`` variables are removed
+* **Off unless configured.** It needs ``OPENULTRON_PHONE_BOT_TOKEN`` and
+  ``OPENULTRON_PHONE_OWNER_ID`` (the older ``OPENJARVIS_PHONE_*`` names still
+  work). These ``OPENULTRON_*`` / ``OPENJARVIS_*`` variables are removed
   from the environment of every terminal and ``claude`` child.
 * **Same rules as the screen.** The phone talks to an Ultron session: it has no
   shell and every sensitive action (create / delete) shows up as a message with
@@ -76,8 +77,16 @@ class PhoneConfig:
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str]) -> Optional["PhoneConfig"]:
-        token = environ.get("OPENJARVIS_PHONE_BOT_TOKEN", "").strip()
-        raw_owner = environ.get("OPENJARVIS_PHONE_OWNER_ID", "").strip()
+        def lookup(suffix: str) -> str:
+            # The OPENULTRON_ name wins; the old OPENJARVIS_ name is a fallback.
+            for prefix in ("OPENULTRON_PHONE_", "OPENJARVIS_PHONE_"):
+                value = environ.get(prefix + suffix, "").strip()
+                if value:
+                    return value
+            return ""
+
+        token = lookup("BOT_TOKEN")
+        raw_owner = lookup("OWNER_ID")
         if not token or not raw_owner.lstrip("-").isdigit():
             return None
         owner = int(raw_owner)
@@ -86,7 +95,7 @@ class PhoneConfig:
 
         def number(name: str, default: float) -> float:
             try:
-                value = float(environ.get(name, "") or default)
+                value = float(lookup(name) or default)
             except ValueError:
                 return default
             return value if value > 0 else default
@@ -94,9 +103,9 @@ class PhoneConfig:
         return cls(
             token=token,
             owner_id=owner,
-            max_per_hour=int(number("OPENJARVIS_PHONE_MAX_PER_HOUR", 40)),
-            max_text=int(number("OPENJARVIS_PHONE_MAX_TEXT", 2000)),
-            turn_timeout=number("OPENJARVIS_PHONE_TURN_SECONDS", 900.0),
+            max_per_hour=int(number("MAX_PER_HOUR", 40)),
+            max_text=int(number("MAX_TEXT", 2000)),
+            turn_timeout=number("TURN_SECONDS", 900.0),
         )
 
 

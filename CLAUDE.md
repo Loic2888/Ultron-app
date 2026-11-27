@@ -245,8 +245,9 @@ Donner un shell à un navigateur est dangereux. Obligatoire :
    **Téléphone** : `server/phone_bridge.py`, robot Telegram privé (appels
    sortants uniquement, aucun port ouvert), réservé à l'identifiant de Loïc
    (expéditeur + conversation privée, sinon ignoré sans réponse), désactivé sans
-   `OPENJARVIS_PHONE_BOT_TOKEN` et `OPENJARVIS_PHONE_OWNER_ID` (variables
-   `OPENJARVIS_*` retirées des enfants ; `TELEGRAM_BOT_TOKEN` aussi). Une session
+   `OPENULTRON_PHONE_BOT_TOKEN` et `OPENULTRON_PHONE_OWNER_ID` (anciens noms
+   `OPENJARVIS_PHONE_*` acceptés en repli ; les deux préfixes sont retirés des
+   enfants, `TELEGRAM_BOT_TOKEN` aussi). Une session
    Jarvis dédiée ; approbations par boutons ; plafonds : 40 messages/h, 2000
    caractères, 15 min par tâche, tâches refusées si l'abonnement dépasse 85 %
    (5 h) ou 95 % (7 j) ; messages reçus hors ligne jetés au démarrage ; jeton

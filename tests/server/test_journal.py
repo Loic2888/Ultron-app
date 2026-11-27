@@ -124,8 +124,8 @@ class TestInfoAndPhoneStatus:
     def test_phone_status_never_shows_secrets(self, monkeypatch):
         from openjarvis.server.phone_bridge import create_phone_router
 
-        monkeypatch.setenv("OPENJARVIS_PHONE_BOT_TOKEN", "123:SECRET")
-        monkeypatch.setenv("OPENJARVIS_PHONE_OWNER_ID", "424242")
+        monkeypatch.setenv("OPENULTRON_PHONE_BOT_TOKEN", "123:SECRET")
+        monkeypatch.setenv("OPENULTRON_PHONE_OWNER_ID", "424242")
         app = FastAPI()
         app.include_router(create_phone_router())
         app.state.allowed_origins = [FRONTEND]

@@ -164,16 +164,16 @@ async def finish(bridge):
 class TestConfig:
     def test_needs_both_values(self):
         assert pb.PhoneConfig.from_env({}) is None
-        assert pb.PhoneConfig.from_env({"OPENJARVIS_PHONE_BOT_TOKEN": "t"}) is None
-        assert pb.PhoneConfig.from_env({"OPENJARVIS_PHONE_OWNER_ID": "5"}) is None
+        assert pb.PhoneConfig.from_env({"OPENULTRON_PHONE_BOT_TOKEN": "t"}) is None
+        assert pb.PhoneConfig.from_env({"OPENULTRON_PHONE_OWNER_ID": "5"}) is None
 
     def test_owner_must_be_a_positive_number(self):
         for bad in ("abc", "-100123", "0", "12.5", ""):
             assert (
                 pb.PhoneConfig.from_env(
                     {
-                        "OPENJARVIS_PHONE_BOT_TOKEN": "t",
-                        "OPENJARVIS_PHONE_OWNER_ID": bad,
+                        "OPENULTRON_PHONE_BOT_TOKEN": "t",
+                        "OPENULTRON_PHONE_OWNER_ID": bad,
                     }
                 )
                 is None
@@ -182,10 +182,10 @@ class TestConfig:
     def test_reads_values_and_limits(self):
         cfg = pb.PhoneConfig.from_env(
             {
-                "OPENJARVIS_PHONE_BOT_TOKEN": " t ",
-                "OPENJARVIS_PHONE_OWNER_ID": "77",
-                "OPENJARVIS_PHONE_MAX_PER_HOUR": "5",
-                "OPENJARVIS_PHONE_MAX_TEXT": "oops",
+                "OPENULTRON_PHONE_BOT_TOKEN": " t ",
+                "OPENULTRON_PHONE_OWNER_ID": "77",
+                "OPENULTRON_PHONE_MAX_PER_HOUR": "5",
+                "OPENULTRON_PHONE_MAX_TEXT": "oops",
             }
         )
         assert (cfg.token, cfg.owner_id, cfg.max_per_hour, cfg.max_text) == (
@@ -194,6 +194,39 @@ class TestConfig:
             5,
             2000,
         )
+
+    def test_the_old_openjarvis_names_still_work(self):
+        cfg = pb.PhoneConfig.from_env(
+            {
+                "OPENJARVIS_PHONE_BOT_TOKEN": "old",
+                "OPENJARVIS_PHONE_OWNER_ID": "5",
+                "OPENJARVIS_PHONE_MAX_PER_HOUR": "9",
+            }
+        )
+        assert (cfg.token, cfg.owner_id, cfg.max_per_hour) == ("old", 5, 9)
+
+    def test_the_openultron_names_win_over_the_old_ones(self):
+        cfg = pb.PhoneConfig.from_env(
+            {
+                "OPENULTRON_PHONE_BOT_TOKEN": "new",
+                "OPENJARVIS_PHONE_BOT_TOKEN": "old",
+                "OPENULTRON_PHONE_OWNER_ID": "7",
+                "OPENJARVIS_PHONE_OWNER_ID": "5",
+            }
+        )
+        assert (cfg.token, cfg.owner_id) == ("new", 7)
+
+    def test_both_prefixes_are_removed_from_child_environments(self):
+        from openjarvis.server.terminal_routes import terminal_env
+
+        env = terminal_env(
+            {
+                "PATH": "/bin",
+                "OPENULTRON_PHONE_BOT_TOKEN": "secret",
+                "OPENJARVIS_PHONE_BOT_TOKEN": "secret",
+            }
+        )
+        assert not any("PHONE" in key or "secret" in env[key] for key in env)
 
     def test_token_is_never_printed(self):
         cfg = pb.PhoneConfig(token=TOKEN, owner_id=1)
@@ -595,8 +628,8 @@ class TestInstall:
         pb.install_phone_bridge(
             app,
             environ={
-                "OPENJARVIS_PHONE_BOT_TOKEN": TOKEN,
-                "OPENJARVIS_PHONE_OWNER_ID": str(OWNER),
+                "OPENULTRON_PHONE_BOT_TOKEN": TOKEN,
+                "OPENULTRON_PHONE_OWNER_ID": str(OWNER),
             },
         )
         with caplog.at_level(logging.INFO):
@@ -611,8 +644,8 @@ class TestInstall:
 
         env = terminal_env(
             {
-                "OPENJARVIS_PHONE_BOT_TOKEN": "x",
-                "OPENJARVIS_PHONE_OWNER_ID": "1",
+                "OPENULTRON_PHONE_BOT_TOKEN": "x",
+                "OPENULTRON_PHONE_OWNER_ID": "1",
                 "TELEGRAM_BOT_TOKEN": "y",
                 "PATH": "/bin",
             }

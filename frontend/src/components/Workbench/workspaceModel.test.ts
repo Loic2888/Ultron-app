@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  tabLabel,
   addClaudeTab,
   addRepo,
   addTerminal,
@@ -229,5 +230,25 @@ describe('basename', () => {
     expect(basename('/a/b/c.ts')).toBe('c.ts');
     expect(basename('/a/b/')).toBe('b');
     expect(basename('/')).toBe('/');
+  });
+});
+
+describe('tabLabel', () => {
+  const claude = (id: number, title: string) => ({ id, kind: 'claude' as const, title, chat: `c${id}` });
+  const term = { id: 9, kind: 'terminal' as const, title: 'Terminal 3' };
+
+  it('hides the number of a Claude Code window that is alone', () => {
+    const tabs = [claude(1, 'Claude Code 2'), term];
+    expect(tabLabel(tabs[0], tabs)).toBe('Claude Code');
+  });
+
+  it('keeps the numbers when several Claude Code windows are open', () => {
+    const tabs = [claude(1, 'Claude Code 2'), claude(2, 'Claude Code 3')];
+    expect(tabLabel(tabs[0], tabs)).toBe('Claude Code 2');
+    expect(tabLabel(tabs[1], tabs)).toBe('Claude Code 3');
+  });
+
+  it('leaves terminals and editors alone', () => {
+    expect(tabLabel(term, [term])).toBe('Terminal 3');
   });
 });
