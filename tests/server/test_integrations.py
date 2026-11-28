@@ -10,7 +10,13 @@ import pytest
 from openjarvis.server import integrations as itg
 from openjarvis.server import jarvis_policy as pol
 
-SENSITIVE = ("github_comment", "git_push", "github_create_pr", "mail_send")
+SENSITIVE = (
+    "github_comment",
+    "git_push",
+    "github_create_pr",
+    "mail_send",
+    "calendar_create_event",
+)
 SAFE = ("github_overview", "github_list", "github_pr", "ask_connectors")
 
 
@@ -259,3 +265,53 @@ class TestDescribe:
         assert "o/r" in itg.describe(
             "github_comment", {"repo": "o/r", "kind": "pr", "number": 1, "body": "x"}
         )
+
+
+class TestCalendar:
+    def ok(self, **kw):
+        return {
+            "title": "Point projet",
+            "start": "2026-12-03T14:30",
+            "end": "2026-12-03T15:00",
+            **kw,
+        }
+
+    def test_only_the_create_event_tool_is_allowed(self, monkeypatch):
+        rec = Recorder("Done.")
+        monkeypatch.setattr(itg, "_run", rec)
+        monkeypatch.setattr(itg.shutil, "which", lambda *a, **k: "/bin/claude")
+        out = itg.calendar_create_event(**self.ok(attendees=["a@b.fr"]))
+        assert out == "Done."
+        call = rec.calls[0]
+        cmd = call["cmd"]
+        assert cmd[cmd.index("--allowedTools") + 1] == (
+            "mcp__claude_ai_Google_Calendar__create_event"
+        )
+        assert cmd[cmd.index("--tools") + 1] == ""
+        sent = json.loads(call["stdin"])
+        assert sent["title"] == "Point projet" and sent["guests"] == ["a@b.fr"]
+
+    @pytest.mark.parametrize(
+        "bad",
+        [
+            {"title": ""},
+            {"title": "a\nb"},
+            {"start": "tomorrow"},
+            {"end": "2026-12-03T14:00"},  # before the start
+            {"start": "2026-12-03T14:30Z"},  # one with an offset, one without
+            {"start": "2026-13-45T14:30", "end": "2026-13-46T14:30"},
+            {"attendees": ["nope"]},
+            {"attendees": ["a@b.fr"] * 11},
+        ],
+    )
+    def test_bad_events_are_refused(self, monkeypatch, bad):
+        rec = Recorder("x")
+        monkeypatch.setattr(itg, "_run", rec)
+        with pytest.raises(ValueError):
+            itg.calendar_create_event(**self.ok(**bad))
+        assert rec.calls == []
+
+    def test_the_owner_sees_the_event_and_the_guests(self):
+        text = itg.describe("calendar_create_event", self.ok(attendees=["a@b.fr"]))
+        assert "Point projet" in text and "2026-12-03T14:30" in text
+        assert "a@b.fr" in text

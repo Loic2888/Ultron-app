@@ -28,6 +28,7 @@ exécutés par `server/integrations.py`.
 | `git_push` | **approbation** | pousse la branche de travail (jamais main/master, jamais forcé) |
 | `github_create_pr` | **approbation** | ouvre une PR depuis la branche poussée |
 | `mail_send` | **approbation** | envoie un mail en texte simple (1 à 5 destinataires) |
+| `calendar_create_event` | **approbation** | crée un évènement Google Agenda (connecteur déjà branché ; les invités reçoivent une invitation) |
 
 Garde-fous, imposés en code (comme `create_repo` / `delete_path`) :
 - l'approbation porte sur **l'appel exact** (usage unique, 120 s) ; la carte
@@ -43,7 +44,7 @@ Garde-fous, imposés en code (comme `create_repo` / `delete_path`) :
 
 État visible dans Settings → « Accounts Ultron can use » (`GET /v1/integrations/status`).
 
-## Actions manuelles pour toi
+## Actions manuelles pour toi (guide pas à pas : `docs/guide-mail-et-agenda.md`)
 
 1. **Redémarrer** le serveur : `jarvis stop`, puis rouvrir l'app (le code Python
    n'est lu qu'au démarrage) ; reconstruire l'interface : `cd frontend && npm run build`.

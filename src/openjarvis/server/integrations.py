@@ -26,6 +26,7 @@ import re
 import shutil
 import smtplib
 import subprocess
+from datetime import datetime
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Any, Optional
@@ -332,30 +333,94 @@ def github_create_pr(
 # -- Connectors (read only) ------------------------------------------------
 
 
-def ask_connectors(question: str) -> str:
-    """Answer a question from the owner's connected services, read-only."""
-    text = str(question or "").strip()
-    if not text or len(text) > 2000:
-        raise ValueError("The question must have 1 to 2000 characters.")
+def _run_claude(prompt: str, allowed: tuple[str, ...], system: str) -> str:
+    """One-shot ``claude`` (subscription, no built-in tools, fixed tool list)."""
     binary = shutil.which("claude", path=_env().get("PATH"))
     if binary is None:
         raise ValueError("claude is not installed.")
     model = os.environ.get("OPENULTRON_CONNECTORS_MODEL", "").strip() or "haiku"
     if not re.fullmatch(r"[A-Za-z0-9._-]{1,60}", model):
         model = "haiku"
-    out = _run(
+    return _run(
         [
             binary, "-p", "--output-format", "text", "--tools", "",
             "--permission-mode", "dontAsk", "--disable-slash-commands",
             "--no-session-persistence", "--model", model,
-            "--append-system-prompt", CONNECTOR_PROMPT,
-            "--allowedTools", ",".join(READ_ONLY_CONNECTOR_TOOLS),
+            "--append-system-prompt", system,
+            "--allowedTools", ",".join(allowed),
         ],
-        stdin=text,
+        stdin=prompt,
         cwd=Path.home(),
         timeout=CONNECTOR_TIMEOUT,
     )  # fmt: skip
+
+
+def ask_connectors(question: str) -> str:
+    """Answer a question from the owner's connected services, read-only."""
+    text = str(question or "").strip()
+    if not text or len(text) > 2000:
+        raise ValueError("The question must have 1 to 2000 characters.")
+    out = _run_claude(text, READ_ONLY_CONNECTOR_TOOLS, CONNECTOR_PROMPT)
     return _clip(out) or "No answer."
+
+
+# -- Calendar (write, through the Google Calendar connector) ---------------
+
+CALENDAR_WRITE_TOOLS = ("mcp__claude_ai_Google_Calendar__create_event",)
+MAX_GUESTS = 10
+_WHEN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})?$")
+CALENDAR_PROMPT = (
+    "You create exactly one calendar event with the create_event tool, using the "
+    "JSON you are given and nothing else: same title, times, guests, place and "
+    "description. A time without an offset is in the owner's calendar time zone. "
+    "Never create a second event, never edit or delete anything. Then say in one "
+    "plain sentence whether it worked."
+)
+
+
+def _when(value: Any, label: str) -> datetime:
+    text = str(value or "").strip()
+    if not _WHEN.match(text):
+        raise ValueError(f"{label} must look like 2026-12-03T14:30 (ISO 8601).")
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{label} is not a real date.") from exc
+
+
+def calendar_create_event(
+    title: str,
+    start: str,
+    end: str,
+    attendees: Any = None,
+    location: str = "",
+    description: str = "",
+) -> str:
+    """Create one event in the owner's Google Calendar (guests get an invitation)."""
+    heading = str(title or "").strip()
+    if not heading or len(heading) > 200 or "\n" in heading:
+        raise ValueError("The title must be one line of 1 to 200 characters.")
+    first, last = _when(start, "start"), _when(end, "end")
+    if (first.tzinfo is None) != (last.tzinfo is None):
+        raise ValueError("Give start and end both with or both without an offset.")
+    if last <= first:
+        raise ValueError("The end must be after the start.")
+    guests = [str(a or "").strip() for a in (attendees or [])]
+    if len(guests) > MAX_GUESTS or not all(_ADDRESS.match(a) for a in guests):
+        raise ValueError(f"Give at most {MAX_GUESTS} valid guest addresses.")
+    place, notes = str(location or "").strip(), str(description or "").strip()
+    if len(place) > 300 or len(notes) > 4000:
+        raise ValueError("The place or the description is too long.")
+    event = {
+        "title": heading,
+        "start": str(start).strip(),
+        "end": str(end).strip(),
+        "guests": guests,
+        "location": place,
+        "description": notes,
+    }
+    out = _run_claude(json.dumps(event), CALENDAR_WRITE_TOOLS, CALENDAR_PROMPT)
+    return _clip(out, 600) or "No answer."
 
 
 # -- Mail sending (SMTP, optional) -----------------------------------------
@@ -451,6 +516,14 @@ def describe(name: str, args: dict[str, Any]) -> str:
         to = args.get("to")
         who = ", ".join(to) if isinstance(to, list) else str(to or "")
         return f"To: {who}\nSubject: {field('subject')}\n\n{_clip(field('body'), 600)}"
+    if name == "calendar_create_event":
+        guests = args.get("attendees") or []
+        lines = [field("title"), f"{field('start')} -> {field('end')}"]
+        if field("location"):
+            lines.append(f"At: {field('location')}")
+        if guests:
+            lines.append("Invites: " + ", ".join(str(g) for g in guests))
+        return "\n".join(lines)
     if name == "git_push":
         return f"Branch {field('branch')} of {Path(field('path')).name}"
     if name == "github_create_pr":

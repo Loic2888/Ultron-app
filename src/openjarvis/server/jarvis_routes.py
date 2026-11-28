@@ -70,6 +70,14 @@ INTEGRATION_CALLS: dict[str, Any] = {
     "github_create_pr": lambda a: integrations.github_create_pr(
         a.get("path"), a.get("title"), a.get("body") or "", a.get("base") or "main"
     ),
+    "calendar_create_event": lambda a: integrations.calendar_create_event(
+        a.get("title"),
+        a.get("start"),
+        a.get("end"),
+        a.get("attendees"),
+        a.get("location") or "",
+        a.get("description") or "",
+    ),
     "mail_send": lambda a: integrations.mail_send(
         a.get("to"), a.get("subject"), a.get("body")
     ),

@@ -328,6 +328,10 @@ export function toolSummary(name: string, input: unknown): string {
     }
     case 'mcp__jarvis__github_comment':
       return `${pick('repo')} #${String(input.number ?? '')}: ${pick('body').slice(0, 400)}`;
+    case 'mcp__jarvis__calendar_create_event': {
+      const guests = Array.isArray(input.attendees) && input.attendees.length ? ` | invites ${input.attendees.join(', ')}` : '';
+      return `${pick('title')} | ${pick('start')} -> ${pick('end')}${guests}`;
+    }
     case 'mcp__jarvis__git_push':
       return `${pick('branch')} (${pick('path').split('/').pop() ?? ''})`;
     case 'mcp__jarvis__github_create_pr':
@@ -347,6 +351,7 @@ const JARVIS_ASKS: Record<string, string> = {
   git_push: 'push this branch to GitHub',
   github_create_pr: 'open this pull request',
   mail_send: 'send this mail',
+  calendar_create_event: 'add this event to your calendar',
 };
 
 /** `mcp__jarvis__open_repo` -> `open_repo`; other names unchanged. */
