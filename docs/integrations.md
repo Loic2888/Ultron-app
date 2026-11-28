@@ -44,7 +44,7 @@ Garde-fous, imposés en code (comme `create_repo` / `delete_path`) :
 
 État visible dans Settings → « Accounts Ultron can use » (`GET /v1/integrations/status`).
 
-## Actions manuelles pour toi (guide pas à pas : `docs/guide-mail-et-agenda.md`)
+## Actions manuelles pour toi
 
 1. **Redémarrer** le serveur : `jarvis stop`, puis rouvrir l'app (le code Python
    n'est lu qu'au démarrage) ; reconstruire l'interface : `cd frontend && npm run build`.
