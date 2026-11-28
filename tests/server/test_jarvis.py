@@ -770,3 +770,54 @@ def test_the_prompt_asks_for_short_plain_answers():
 
     for word in ("phone", "plain", "tables", "file paths", "language the owner writes"):
         assert word in PROMPT
+
+
+class TestIntegrationTools:
+    def test_sensitive_integration_tools_need_the_owner_first(
+        self, home, fake_jarvis, japi, monkeypatch
+    ):
+        from openjarvis.server import integrations
+
+        sent = []
+        monkeypatch.setattr(
+            integrations, "mail_send", lambda to, s, b: sent.append((to, s, b)) or {}
+        )
+        a = japi()
+        sid = a.session(home)
+        args = {"to": ["a@b.fr"], "subject": "Hi", "body": "Text"}
+        refused = a.tool(a.secret(sid), "mail_send", args).json()
+        assert refused["ok"] is False and "approved" in refused["error"] and not sent
+        a.grant(sid, "mail_send", args)
+        assert a.tool(a.secret(sid), "mail_send", args).json()["ok"] is True
+        assert len(sent) == 1
+        # single use, and bound to the exact text
+        assert a.tool(a.secret(sid), "mail_send", args).json()["ok"] is False
+        a.grant(sid, "mail_send", args)
+        other = {**args, "body": "Changed"}
+        assert a.tool(a.secret(sid), "mail_send", other).json()["ok"] is False
+
+    def test_a_safe_tool_runs_and_errors_are_reported(
+        self, home, fake_jarvis, japi, monkeypatch
+    ):
+        from openjarvis.server import integrations
+
+        monkeypatch.setattr(integrations, "ask_connectors", lambda q: f"re: {q}")
+        a = japi()
+        sid = a.session(home)
+        res = a.tool(a.secret(sid), "ask_connectors", {"question": "mails?"}).json()
+        assert res == {"ok": True, "result": "re: mails?"}
+
+        def boom(q):
+            raise ValueError("claude is not installed.")
+
+        monkeypatch.setattr(integrations, "ask_connectors", boom)
+        res = a.tool(a.secret(sid), "ask_connectors", {"question": "x"}).json()
+        assert res["ok"] is False and "not installed" in res["error"]
+
+    def test_status_endpoint_has_no_secret(self, home, fake_jarvis, japi, monkeypatch):
+        monkeypatch.setenv("OPENULTRON_MAIL_PASSWORD", "hunter2-secret")
+        a = japi()
+        res = a.call("GET", "/v1/integrations/status")
+        assert res.status_code == 200
+        assert "hunter2-secret" not in res.text
+        assert set(res.json()) == {"github", "connectors", "mail_send"}

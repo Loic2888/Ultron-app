@@ -83,6 +83,14 @@ export interface PhoneStatus {
 
 export const fetchPhoneStatus = () => call<PhoneStatus>('/v1/phone/status');
 
+export interface IntegrationsStatus {
+  github: { installed: boolean; logged_in: boolean };
+  connectors: { claude_installed: boolean; read_only_tools: number };
+  mail_send: { configured: boolean };
+}
+
+export const fetchIntegrationsStatus = () => call<IntegrationsStatus>('/v1/integrations/status');
+
 /** Fire and forget: a failed log line must never disturb the screen. */
 export function logAction(category: string, message: string, repo?: string, level: LogItem['level'] = 'info'): void {
   call('/v1/journal/logs', {

@@ -43,7 +43,7 @@ from typing import Any, Mapping, Optional
 import httpx
 from fastapi import APIRouter, Request
 
-from openjarvis.server import jarvis_policy
+from openjarvis.server import integrations, jarvis_policy
 from openjarvis.server.claude_routes import SessionLimit, make_session, manager_of
 
 logger = logging.getLogger("openjarvis.phone")
@@ -470,7 +470,9 @@ class PhoneBridge:
             ask = jarvis_policy.ASKS.get(
                 jarvis_policy.short_name(tool), jarvis_policy.short_name(tool)
             )
-            detail = (event.get("input") or {}).get("path") or ""
+            detail = integrations.describe(
+                jarvis_policy.short_name(tool), event.get("input") or {}
+            )
             token = secrets.token_hex(4)
             card = await self.api.send(
                 self.cfg.owner_id,

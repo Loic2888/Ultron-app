@@ -322,6 +322,20 @@ export function toolSummary(name: string, input: unknown): string {
       return pick('url');
     case 'WebSearch':
       return pick('query');
+    case 'mcp__jarvis__mail_send': {
+      const to = Array.isArray(input.to) ? input.to.join(', ') : pick('to');
+      return `To: ${to} | ${pick('subject')} | ${pick('body').slice(0, 400)}`;
+    }
+    case 'mcp__jarvis__github_comment':
+      return `${pick('repo')} #${String(input.number ?? '')}: ${pick('body').slice(0, 400)}`;
+    case 'mcp__jarvis__calendar_create_event': {
+      const guests = Array.isArray(input.attendees) && input.attendees.length ? ` | invites ${input.attendees.join(', ')}` : '';
+      return `${pick('title')} | ${pick('start')} -> ${pick('end')}${guests}`;
+    }
+    case 'mcp__jarvis__git_push':
+      return `${pick('branch')} (${pick('path').split('/').pop() ?? ''})`;
+    case 'mcp__jarvis__github_create_pr':
+      return pick('title');
     default:
       return pick('description', 'command', 'file_path', 'path', 'query', 'prompt');
   }
@@ -333,6 +347,11 @@ const JARVIS_PREFIX = 'mcp__jarvis__';
 const JARVIS_ASKS: Record<string, string> = {
   create_repo: 'create a new repository',
   delete_path: 'move to the trash',
+  github_comment: 'post this comment on GitHub',
+  git_push: 'push this branch to GitHub',
+  github_create_pr: 'open this pull request',
+  mail_send: 'send this mail',
+  calendar_create_event: 'add this event to your calendar',
 };
 
 /** `mcp__jarvis__open_repo` -> `open_repo`; other names unchanged. */

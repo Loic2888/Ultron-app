@@ -5,7 +5,9 @@ import { ClaudeAccountCard } from '../components/Workbench/ClaudeAccountCard';
 import {
   clearServerLogs,
   fetchJournalInfo,
+  fetchIntegrationsStatus,
   fetchPhoneStatus,
+  type IntegrationsStatus,
   type JournalInfo,
   type PhoneStatus,
 } from '../lib/journalApi';
@@ -50,6 +52,7 @@ export function phoneSummary(phone: PhoneStatus | null, failed: boolean): string
 export function SettingsPage() {
   const [phone, setPhone] = useState<PhoneStatus | null>(null);
   const [phoneFailed, setPhoneFailed] = useState(false);
+  const [integrations, setIntegrations] = useState<IntegrationsStatus | null>(null);
   const [info, setInfo] = useState<JournalInfo | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -60,6 +63,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     fetchPhoneStatus().then(setPhone).catch(() => setPhoneFailed(true));
+    fetchIntegrationsStatus().then(setIntegrations).catch(() => setIntegrations(null));
     loadInfo();
   }, []);
 
@@ -103,6 +107,34 @@ export function SettingsPage() {
           </ul>
         </Card>
 
+        <Card icon={<Smartphone size={16} style={{ color: 'var(--color-accent)' }} />} title="Accounts Ultron can use">
+          <Row
+            label="GitHub"
+            value={
+              !integrations
+                ? '…'
+                : integrations.github.logged_in
+                  ? 'Ready (gh)'
+                  : integrations.github.installed
+                    ? 'Run: gh auth login'
+                    : 'Install gh'
+            }
+          />
+          <Row
+            label="Connectors (mail, calendar, tickets…)"
+            value={
+              !integrations
+                ? '…'
+                : integrations.connectors.claude_installed
+                  ? `Read-only, ${integrations.connectors.read_only_tools} tools`
+                  : 'claude not found'
+            }
+          />
+          <Row
+            label="Sending mail"
+            value={!integrations ? '…' : integrations.mail_send.configured ? 'Ready' : 'Off (see docs/integrations.md)'}
+          />
+        </Card>
         <Card icon={<Smartphone size={16} style={{ color: 'var(--color-accent)' }} />} title="Phone (Telegram bot)">
           <Row label="State" value={phoneSummary(phone, phoneFailed)} />
           {phone?.configured && (

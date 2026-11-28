@@ -237,9 +237,10 @@ Donner un shell à un navigateur est dangereux. Obligatoire :
    `GET /v1/jarvis/commands`, un seul onglet exécute (claim), résultat renvoyé ;
    côté front `JarvisBridge.tsx` + `jarvisBridge.ts`. Le MCP s'authentifie avec
    un secret propre à la session (fichier 0600 dans un dossier 0700, jamais en
-   ligne de commande), pas avec le jeton du navigateur. Limites : pas de
-   `git push` ni d'envoi de message par Jarvis (à ajouter avec leur
-   approbation) ; il ne tape pas dans les terminaux ; une seule fenêtre de
+   ligne de commande), pas avec le jeton du navigateur. Intégrations (`server/integrations.py`, `docs/integrations.md`) : GitHub par `gh`,
+   connecteurs Claude en lecture seule (`ask_connectors`), envoi de mail SMTP ;
+   `github_comment`, `git_push` (jamais main, jamais forcé), `github_create_pr`
+   et `mail_send` sont **sensibles** (approbation de l'appel exact). Limites : il ne tape pas dans les terminaux ; une seule fenêtre de
    navigateur doit être ouverte pour que les commandes d'écran aboutissent.
 6. ◐ Application de bureau + téléphone — fait en partie, à valider par Loïc.
    **Téléphone** : `server/phone_bridge.py`, robot Telegram privé (appels

@@ -37,8 +37,8 @@ except ImportError:  # pragma: no cover - fastapi is a server extra
 
 import json
 
+from openjarvis.server import integrations, journal
 from openjarvis.server import jarvis_policy as policy
-from openjarvis.server import journal
 from openjarvis.server.terminal_routes import (
     host_header_is_loopback,
     is_loopback_address,
@@ -53,6 +53,35 @@ TRASH_DIR = ".jarvis-trash"
 FIND_MAX_DEPTH = 3
 FIND_MAX_RESULTS = 50
 _SKIP_DIRS = {"node_modules", ".git", ".venv", "venv", "__pycache__", "target"}
+
+
+# Tools served by ``integrations`` (blocking programs: run in a thread).
+INTEGRATION_CALLS: dict[str, Any] = {
+    "github_overview": lambda a: integrations.github_overview(),
+    "github_list": lambda a: integrations.github_list(
+        a.get("repo"), str(a.get("kind") or "pr"), str(a.get("state") or "open")
+    ),
+    "github_pr": lambda a: integrations.github_pr(a.get("repo"), a.get("number")),
+    "ask_connectors": lambda a: integrations.ask_connectors(a.get("question")),
+    "github_comment": lambda a: integrations.github_comment(
+        a.get("repo"), str(a.get("kind") or ""), a.get("number"), a.get("body")
+    ),
+    "git_push": lambda a: integrations.git_push(a.get("path"), a.get("branch")),
+    "github_create_pr": lambda a: integrations.github_create_pr(
+        a.get("path"), a.get("title"), a.get("body") or "", a.get("base") or "main"
+    ),
+    "calendar_create_event": lambda a: integrations.calendar_create_event(
+        a.get("title"),
+        a.get("start"),
+        a.get("end"),
+        a.get("attendees"),
+        a.get("location") or "",
+        a.get("description") or "",
+    ),
+    "mail_send": lambda a: integrations.mail_send(
+        a.get("to"), a.get("subject"), a.get("body")
+    ),
+}
 
 
 class NoScreen(Exception):
@@ -313,6 +342,12 @@ def create_jarvis_router() -> APIRouter:
             raise HTTPException(status_code=404, detail="No such pending command")
         return {"ok": True}
 
+    @router.get("/v1/integrations/status")
+    async def integrations_status(request: Request) -> dict[str, Any]:
+        """Which outside services are ready (GitHub, connectors, mail); no secret."""
+        guard(request)
+        return await asyncio.to_thread(integrations.status)
+
     # ---- the assistant (MCP helper) ----------------------------------------
 
     @router.post("/v1/jarvis/tool")
@@ -349,6 +384,9 @@ def create_jarvis_router() -> APIRouter:
                 return {"ok": True, "result": create_repo(str(args.get("path", "")))}
             if name == "delete_path":
                 return {"ok": True, "result": delete_path(str(args.get("path", "")))}
+            if name in INTEGRATION_CALLS:
+                result = await asyncio.to_thread(INTEGRATION_CALLS[name], args)
+                return {"ok": True, "result": result}
         except NoScreen as exc:
             return {"ok": False, "error": str(exc)}
         except (ValueError, OSError, subprocess.SubprocessError) as exc:
